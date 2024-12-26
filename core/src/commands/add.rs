@@ -4,17 +4,12 @@ use core::{Config, Data, Error};
 use serde_yaml;
 
 use std::{
-    fs::{metadata, File, OpenOptions},
+    fs::{metadata, File},
     io::Write,
 };
 
 pub fn execute(name: &str, path: &str) -> Result<(), Error> {
-    let mut file = OpenOptions::new()
-        .read(true)
-        .append(true)
-        .create(true)
-        .open(FILENAME)
-        .map_err(|err| Error::FileOpen(err.to_string()))?;
+    let mut file = File::open(FILENAME).map_err(|err| Error::FileOpen(err.to_string()))?;
 
     if metadata(FILENAME)
         .map_err(|err| Error::Metadata(err.to_string()))?
