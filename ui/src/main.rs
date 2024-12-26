@@ -5,16 +5,18 @@ use components::{
     game_data::GameData,
     game_list::{GameList, GameListMessage},
     header::{Header, HeaderMessage},
-    modal,
     settings::Settings,
 };
+
 use iced::{
     self,
-    advanced::Overlay,
-    widget::{column, container, overlay, text},
+    widget::{column, container},
     window::{self, Position},
     Element, Size, Task as Command,
 };
+
+use ui::modal;
+
 fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
         .window(window::Settings {

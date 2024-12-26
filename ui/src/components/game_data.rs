@@ -36,7 +36,7 @@ impl GameData {
         Self {
             id: Uuid::new_v4(),
             state: GameDataState::Idle,
-            name: name.to_string(),
+            name: name.into(),
             path: path.to_path_buf(),
             icon: String::new(),
             minutes_played: 0,
