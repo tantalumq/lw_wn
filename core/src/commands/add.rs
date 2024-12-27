@@ -1,12 +1,9 @@
 use super::{file_open, GAME_DATA};
 
-use core::{Config, Data, Error};
+use core::{print_success, Config, Data, Error};
 use serde_yaml;
 
-use std::{
-    fs::{metadata, File, OpenOptions},
-    io::Write,
-};
+use std::fs::File;
 
 pub fn execute(name: &str, path: &str) -> Result<(), Error> {
     let file = file_open()?;
@@ -23,7 +20,18 @@ pub fn execute(name: &str, path: &str) -> Result<(), Error> {
         },
     };
     let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
-    serde_yaml::to_writer(file, &config).map_err(|err| Error::ToWriter(err.to_string()))
+    serde_yaml::to_writer(file, &config).map_err(|err| Error::ToWriter(err.to_string()))?;
+    let uuid = config.data.clone().unwrap().last().unwrap().uuid();
+    let id = config
+        .data
+        .unwrap()
+        .iter()
+        .position(|el| el.uuid() == uuid)
+        .unwrap()
+        .to_string();
+    Ok(print_success(
+        format!("Game '{name}' added with id {id} at '{path}' ({uuid})",).as_str(),
+    ))
 }
 
 pub fn help() {

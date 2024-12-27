@@ -1,6 +1,5 @@
-use core::{Config, Error};
+use core::Error;
 use std::{
-    fmt::format,
     fs::{metadata, File, OpenOptions},
     io::Write,
 };

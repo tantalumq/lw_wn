@@ -1,4 +1,4 @@
-use core::{Config, Error};
+use core::{print_success, Config, Error};
 use std::{
     fs::File,
     path::PathBuf,
@@ -6,7 +6,7 @@ use std::{
     str::FromStr,
     sync::{Arc, Mutex},
     thread::{self, sleep},
-    time::{Duration, Instant},
+    time::Duration,
     usize,
 };
 
@@ -23,10 +23,10 @@ pub fn execute(id: &str) -> Result<(), Error> {
         serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
 
     let path: String = if let Some(ref data) = config.data {
-        let data = data.get(id).expect("[ERROR] Game not found");
+        let data = data.get(id).ok_or(Error::GameIsNotExists)?;
         data.path()
     } else {
-        return Err(Error::DataGet("[ERROR] Games not added".to_string()));
+        return Err(Error::DataGet("Games not added".to_string()));
     };
 
     let path = PathBuf::from_str(&path).map_err(|err| Error::PathFrom(err.to_string()))?;
@@ -35,8 +35,16 @@ pub fn execute(id: &str) -> Result<(), Error> {
             return Err(Error::FileNotExe);
         }
     };
+    if !path.exists() {
+        return Err(Error::PathIsNotExists);
+    }
+
     let is_game_running = Arc::new(Mutex::new(true));
     let is_game_running_clone = Arc::clone(&is_game_running);
+
+    let name = config.clone().data.unwrap().get(id).unwrap().name();
+
+    print_success(format!("Game '{name}' launched").as_str());
     thread::spawn(move || {
         let mut child = Command::new(path).spawn().unwrap();
         let _ = child.wait();
@@ -49,13 +57,13 @@ pub fn execute(id: &str) -> Result<(), Error> {
             .as_mut()
             .unwrap()
             .get_mut(id)
-            .expect("[ERROR] Game not found")
+            .ok_or(Error::GameIsNotExists)?
             .add_time(1);
         sleep(Duration::from_secs(1));
         let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
         serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))?;
     }
-    Ok(())
+    Ok(print_success(format!("Game '{name}' was exited").as_str()))
 }
 
 pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
@@ -69,20 +77,36 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
         let data = data
             .iter()
             .find(|el| el.uuid() == uuid)
-            .expect("[ERROR] Game not found");
+            .ok_or(Error::GameIsNotExists)?;
         data.path()
     } else {
-        return Err(Error::DataGet("[ERROR] Games not added".to_string()));
+        return Err(Error::DataGet("Games not added".to_string()));
     };
 
     let path = PathBuf::from_str(&path).map_err(|err| Error::PathFrom(err.to_string()))?;
+
     if let Some(extension) = path.extension() {
         if extension != "exe" {
             return Err(Error::FileNotExe);
         }
     };
+    if !path.exists() {
+        return Err(Error::PathIsNotExists);
+    }
+
     let is_game_running = Arc::new(Mutex::new(true));
     let is_game_running_clone = Arc::clone(&is_game_running);
+
+    let name = config
+        .clone()
+        .data
+        .unwrap()
+        .iter()
+        .find(|el| el.uuid() == uuid)
+        .unwrap()
+        .name();
+
+    print_success(format!("Game '{name}' launched").as_str());
     thread::spawn(move || {
         let mut child = Command::new(path).spawn().unwrap();
         let _ = child.wait();
@@ -96,13 +120,13 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
             .unwrap()
             .iter_mut()
             .find(|el| el.uuid() == uuid)
-            .expect("[ERROR] Game not found")
+            .ok_or(Error::GameIsNotExists)?
             .add_time(1);
         sleep(Duration::from_secs(1));
         let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
         serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))?;
     }
-    Ok(())
+    Ok(print_success(format!("Game '{name}' exited").as_str()))
 }
 
 pub fn help() {

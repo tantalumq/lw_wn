@@ -1,8 +1,5 @@
-use core::{Config, Error};
-use std::{
-    fs::{File, OpenOptions},
-    str::FromStr,
-};
+use core::{print_success, Config, Error};
+use std::{fs::File, str::FromStr};
 
 use uuid::Uuid;
 
@@ -28,11 +25,19 @@ pub fn execute(id: &str, new_name: &str, new_path: &str) -> Result<(), Error> {
 
     let mut config: Config =
         serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
-
     if let Some(ref mut data) = config.data {
-        data.get_mut(id)
-            .expect("[ERROR] Incorrect index")
-            .update(new_name, new_path);
+        let (old_name, old_path) = data
+            .get_mut(id)
+            .ok_or(Error::Index)?
+            .update(new_name.clone(), new_path.clone());
+        match (new_name, new_path) {
+            (Some(name), Some(path)) => print_success(
+                format!("'{old_name}' -> '{name}'; '{old_path}' -> '{path}'").as_str(),
+            ),
+            (Some(name), None) => print_success(format!("'{old_name}' -> '{name}'").as_str()),
+            (None, Some(path)) => print_success(format!("'{old_path}' -> '{path}'").as_str()),
+            _ => {}
+        }
     }
     let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
     serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))
@@ -58,10 +63,19 @@ pub fn execute_uuid(uuid: &str, new_name: &str, new_path: &str) -> Result<(), Er
         serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
 
     if let Some(ref mut data) = config.data {
-        data.iter_mut()
+        let (old_name, old_path) = data
+            .iter_mut()
             .find(|el| el.uuid() == uuid)
-            .expect("[ERROR] Game not found")
-            .update(new_name, new_path);
+            .ok_or(Error::GameIsNotExists)?
+            .update(new_name.clone(), new_path.clone());
+        match (new_name, new_path) {
+            (Some(name), Some(path)) => print_success(
+                format!("'{old_name}' -> '{name}'; '{old_path}' -> '{path}'").as_str(),
+            ),
+            (Some(name), None) => print_success(format!("'{old_name}' -> '{name}'").as_str()),
+            (None, Some(path)) => print_success(format!("'{old_path}' -> '{path}'").as_str()),
+            _ => {}
+        }
     }
     let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
     serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))

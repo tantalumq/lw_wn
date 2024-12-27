@@ -1,4 +1,4 @@
-use core::{Config, Error};
+use core::{print_success, Config, Error};
 
 use crate::commands::parse_time;
 
@@ -11,16 +11,19 @@ pub fn execute() -> Result<(), Error> {
     if let Some(data) = config.data {
         for id in 0..data.len() {
             let game = data.get(id).unwrap();
-            println!(
-                "{id}. {}: {} ({})\n[{}]",
-                game.name(),
-                parse_time(game.time()),
-                game.uuid(),
-                game.path()
+            print_success(
+                format!(
+                    "{id}. {}: {} ({})\n[{}]",
+                    game.name(),
+                    parse_time(game.time()),
+                    game.uuid(),
+                    game.path(),
+                )
+                .as_str(),
             )
         }
         Ok(())
     } else {
-        return Err(Error::FromReader("[ERRPR] No games".into()));
+        return Err(Error::FromReader("No games".into()));
     }
 }
