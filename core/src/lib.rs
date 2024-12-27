@@ -1,3 +1,9 @@
+use std::{
+    fs::{remove_file, File},
+    path::Path,
+    process::exit,
+};
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -6,7 +12,7 @@ pub struct Data {
     uuid: Uuid,
     name: String,
     path: String,
-    time: f32,
+    time: u32,
 }
 
 impl Data {
@@ -19,7 +25,7 @@ impl Data {
             uuid,
             name,
             path,
-            time: 0f32,
+            time: 0u32,
         }
     }
     pub fn uuid(&self) -> Uuid {
@@ -31,6 +37,9 @@ impl Data {
     pub fn path(&self) -> String {
         self.path.clone()
     }
+    pub fn time(&self) -> u32 {
+        self.time
+    }
     pub fn update(&mut self, new_name: Option<String>, new_path: Option<String>) {
         if let Some(name) = new_name {
             self.name = name;
@@ -39,7 +48,7 @@ impl Data {
             self.path = path;
         }
     }
-    pub fn add_time(&mut self, time: f32) {
+    pub fn add_time(&mut self, time: u32) {
         self.time += time;
     }
 }
@@ -63,6 +72,21 @@ pub enum Error {
     FileNotExe,
     Parse(String),
     Metadata(String),
+    Child(String),
 }
 
 impl Error {}
+
+const LOCK: &'static str = "./lock";
+
+pub fn lock() {
+    if !Path::new("./lock").exists() {
+        File::create(LOCK).expect("[ERROR] Can`t create lock file");
+    } else {
+        exit(0);
+    }
+}
+
+pub fn unlock() {
+    remove_file(LOCK).expect("[ERROR] Can`t delete lock file");
+}

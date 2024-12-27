@@ -1,17 +1,39 @@
 use core::{Config, Error};
-use std::{fs::File, str::FromStr};
+use std::{
+    fs::{File, OpenOptions},
+    str::FromStr,
+};
 
 use uuid::Uuid;
 
-use super::FILENAME;
+use super::{file_open, GAME_DATA};
 
-pub fn execute(uuid: &str) -> Result<(), Error> {
-    let uuid = Uuid::from_str(uuid).map_err(|err| Error::UuidFrom(err.to_string()))?;
-    let file = File::open(FILENAME).map_err(|err| Error::FileOpen(err.to_string()))?;
+pub fn execute(id: &str) -> Result<(), Error> {
+    let id = id
+        .parse::<usize>()
+        .map_err(|err| Error::Parse(err.to_string()))?;
+    let file = file_open()?;
     let mut config: Config =
         serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
 
-    let file = File::create(FILENAME).map_err(|err| Error::FileOpen(err.to_string()))?;
+    if let Some(ref mut data) = config.data {
+        data.remove(
+            data.iter()
+                .position(|el| el.uuid() == data.get(id).expect("[ERROR] Incorrect index").uuid())
+                .expect("[ERROR] Game not found"),
+        );
+    }
+    let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
+    serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))
+}
+
+pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
+    let uuid = Uuid::from_str(uuid).map_err(|err| Error::UuidFrom(err.to_string()))?;
+    let file = file_open()?;
+    let mut config: Config =
+        serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
+
+    let file = File::create(GAME_DATA).map_err(|err| Error::FileOpen(err.to_string()))?;
 
     if let Some(ref mut data) = config.data {
         let index = data
@@ -21,26 +43,6 @@ pub fn execute(uuid: &str) -> Result<(), Error> {
         data.remove(index);
     }
     serde_yaml::to_writer(&file, &config).map_err(|err| Error::ToWriter(err.to_string()))
-}
-
-pub fn execute_id(id: &str) -> Result<(), Error> {
-    let id = id
-        .parse::<usize>()
-        .map_err(|err| Error::Parse(err.to_string()))?;
-    let file = File::open(FILENAME).map_err(|err| Error::FileOpen(err.to_string()))?;
-    let config: Config =
-        serde_yaml::from_reader(&file).map_err(|err| Error::FromReader(err.to_string()))?;
-
-    return if let Some(data) = config.data {
-        let uuid = data
-            .get(id)
-            .expect("[ERROR] Incorrect index")
-            .uuid()
-            .to_string();
-        execute(&uuid)
-    } else {
-        return Err(Error::DataGet("[ERROR] Games not added".to_string()));
-    };
 }
 
 pub fn help() {
