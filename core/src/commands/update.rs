@@ -1,4 +1,4 @@
-use core::{print_success, Config, Error};
+use core::{print_hint, print_success, Config, Error};
 use std::{fs::File, str::FromStr};
 
 use uuid::Uuid;
@@ -82,5 +82,6 @@ pub fn execute_uuid(uuid: &str, new_name: &str, new_path: &str) -> Result<(), Er
 }
 
 pub fn help() {
-    println!("[ERROR] Incorrect arguments.\n[HINT] launcher update --uuid 'uuid' ['name'|-n] ['path'|-p]\n[HINT] launcher update 'index' ['name'|-n] ['path'|-p]")
+    print_hint("launcher update --uuid 'uuid' ['name'|-n] ['path'|-p]");
+    print_hint("launcher update 'index' ['name'|-n] ['path'|-p]");
 }

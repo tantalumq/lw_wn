@@ -5,12 +5,8 @@ use std::env;
 
 use commands::{add, help, list, remove, run, update};
 
-// TODO: Add more print
-// TODO: No panics
-
 fn main() {
-    lock();
-
+    _ = lock().inspect_err(|err| print_error(err));
     let mut args: Vec<String> = env::args().collect();
     args.remove(0);
 
@@ -45,5 +41,5 @@ fn main() {
         print_error(error)
     }
 
-    unlock();
+    _ = unlock().inspect_err(|err| print_error(err));
 }

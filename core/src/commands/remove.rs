@@ -1,4 +1,4 @@
-use core::{print_success, Config, Error};
+use core::{print_hint, print_success, Config, Error};
 use std::{fs::File, str::FromStr};
 
 use uuid::Uuid;
@@ -48,7 +48,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    println!(
-        "[ERROR] Incorrect arguments.\n[HINT] launcher remove 'uuid' or launcher remove -i 'index'"
-    )
+    print_hint("launcher remove 'uuid' or launcher remove -i 'index'");
 }

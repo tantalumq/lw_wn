@@ -12,7 +12,12 @@ pub mod update;
 
 pub const GAME_DATA: &'static str = "./games.yml";
 
-pub fn help() {}
+pub fn help() {
+    add::help();
+    remove::help();
+    run::help();
+    update::help();
+}
 
 pub fn file_open() -> Result<File, Error> {
     let mut file = OpenOptions::new()
@@ -54,13 +59,13 @@ pub fn parse_time(time: u32) -> String {
     }
     let mut buf = format!("{}s", secundes);
     if minutes > 0 {
-        buf.insert_str(0, &format!("{}m", minutes));
+        buf.insert_str(0, &format!("{}m ", minutes));
     }
     if hours > 0 {
-        buf.insert_str(0, &format!("{}h", hours));
+        buf.insert_str(0, &format!("{}h ", hours));
     }
     if days > 0 {
-        buf.insert_str(0, &format!("{}d", days));
+        buf.insert_str(0, &format!("{}d ", days));
     }
     buf
 }

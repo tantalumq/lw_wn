@@ -1,4 +1,4 @@
-use core::{print_success, Config, Error};
+use core::{print_hint, print_success, Config, Error};
 use std::{
     fs::File,
     path::PathBuf,
@@ -130,5 +130,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    println!("[ERROR] Incorrect arguments.\n[HINT] launcher run 'id' or launcher run --uuid 'uuid'")
+    print_hint("launcher run 'id' or launcher run --uuid 'uuid''");
 }

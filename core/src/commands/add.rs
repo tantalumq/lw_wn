@@ -1,6 +1,6 @@
 use super::{file_open, GAME_DATA};
 
-use core::{print_success, Config, Data, Error};
+use core::{print_hint, print_success, Config, Data, Error};
 use serde_yaml;
 
 use std::fs::File;
@@ -35,5 +35,5 @@ pub fn execute(name: &str, path: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    println!("[ERROR] Incorrect arguments.\n[HINT] launcher add 'name' 'path'")
+    print_hint("launcher add 'name' 'path'");
 }

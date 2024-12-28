@@ -84,6 +84,7 @@ pub enum Error {
     Index,
     GameIsNotExists,
     PathIsNotExists,
+    FileRemove(String),
 }
 
 impl Display for Error {
@@ -92,6 +93,7 @@ impl Display for Error {
             Error::FileOpen(msg) => write!(f, "{}", msg.red()),
             Error::FileRead(msg) => write!(f, "{}", msg.red()),
             Error::FileWrite(msg) => write!(f, "{}", msg.red()),
+            Error::FileRemove(msg) => write!(f, "{}", msg.red()),
             Error::FromReader(msg) => write!(f, "{}", msg.red()),
             Error::ToWriter(msg) => write!(f, "{}", msg.red()),
             Error::CommandRun(msg) => write!(f, "{}", msg.red()),
@@ -109,25 +111,26 @@ impl Display for Error {
     }
 }
 
-const LOCK: &'static str = "./lock";
+const LOCK: &'static str = "./.LOCK";
 
-pub fn lock() {
-    if !Path::new("./lock").exists() {
-        File::create(LOCK).expect("[ERROR] Can`t create lock file");
+pub fn lock() -> Result<(), Error> {
+    if !Path::new(&LOCK).exists() {
+        _ = File::create(LOCK).map_err(|err| Error::FileOpen(err.to_string()))?;
+        Ok(())
     } else {
         exit(0);
     }
 }
 
-pub fn unlock() {
-    remove_file(LOCK).expect("[ERROR] Can`t delete lock file");
+pub fn unlock() -> Result<(), Error> {
+    remove_file(LOCK).map_err(|err| Error::FileRemove(err.to_string()))
 }
 
 pub fn print_error<T>(msg: T)
 where
     T: Display,
 {
-    println!("{} {}", "[ERROR]".red().bold(), msg)
+    eprintln!("{} {}", "[ERROR]".red().bold(), msg)
 }
 
 pub fn print_success<T>(msg: T)
@@ -135,4 +138,11 @@ where
     T: Colorize,
 {
     println!("{} {}", "[SUCCESS]".green().bold(), msg.green())
+}
+
+pub fn print_hint<T>(msg: T)
+where
+    T: Colorize,
+{
+    println!("{} {}", "[HINT] Try:".yellow().bold(), msg.yellow())
 }
