@@ -35,5 +35,5 @@ pub fn execute(name: &str, path: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    print_hint("launcher add 'name' 'path'");
+    print_hint("core add 'name' 'path'");
 }

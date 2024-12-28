@@ -130,5 +130,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    print_hint("launcher run 'id' or launcher run --uuid 'uuid''");
+    print_hint("core run 'id' or core run --uuid 'uuid''");
 }

@@ -85,6 +85,8 @@ pub enum Error {
     GameIsNotExists,
     PathIsNotExists,
     FileRemove(String),
+    Input(String),
+    Flush(String),
 }
 
 impl Display for Error {
@@ -107,6 +109,8 @@ impl Display for Error {
             Error::Index => write!(f, "{}", "Incorrect index".red()),
             Error::GameIsNotExists => write!(f, "{}", "Game is not exists".red()),
             Error::PathIsNotExists => write!(f, "{}", "Path is not exsits".red()),
+            Error::Input(msg) => write!(f, "{}", msg.red()),
+            Error::Flush(msg) => write!(f, "{}", msg.red()),
         }
     }
 }

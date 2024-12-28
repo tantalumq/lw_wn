@@ -13,7 +13,8 @@ pub fn execute() -> Result<(), Error> {
             let game = data.get(id).unwrap();
             print_success(
                 format!(
-                    "{id}. {}: {} ({})\n[{}]",
+                    "{id}. {}: {} ({})\n\
+                    \t  ['{}']",
                     game.name(),
                     parse_time(game.time()),
                     game.uuid(),

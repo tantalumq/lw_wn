@@ -48,5 +48,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    print_hint("launcher remove 'uuid' or launcher remove -i 'index'");
+    print_hint("core remove 'uuid' or core remove -i 'index'");
 }
