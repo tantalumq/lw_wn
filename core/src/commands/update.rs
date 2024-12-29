@@ -82,6 +82,6 @@ pub fn execute_uuid(uuid: &str, new_name: &str, new_path: &str) -> Result<(), Er
 }
 
 pub fn help() {
-    print_hint("core update --uuid 'uuid' ['name'|-n] ['path'|-p]");
+    print_hint("core update -u 'uuid' ['name'|-n] ['path'|-p]");
     print_hint("core update 'index' ['name'|-n] ['path'|-p]");
 }

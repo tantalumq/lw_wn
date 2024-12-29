@@ -11,8 +11,8 @@ pub struct GameData {
     state: GameDataState,
     name: String,
     path: PathBuf,
-    icon: String, // TODO
-    minutes_played: i32,
+    //icon: String, // TODO
+    minutes_played: u32,
 }
 
 #[derive(Debug, PartialEq)]

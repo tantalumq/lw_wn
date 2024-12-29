@@ -1,4 +1,4 @@
-use core::{print_hint, print_success, Config, Error};
+use core::{print_error, print_hint, print_success, Config, Error};
 use std::{
     fs::File,
     path::PathBuf,
@@ -46,8 +46,12 @@ pub fn execute(id: &str) -> Result<(), Error> {
 
     print_success(format!("Game '{name}' launched").as_str());
     thread::spawn(move || {
-        let mut child = Command::new(path).spawn().unwrap();
-        let _ = child.wait();
+        let mut child = Command::new(path).spawn();
+        if let Ok(ref mut child) = child {
+            _ = child.wait();
+        } else {
+            print_error("Can`t open file");
+        }
         *is_game_running_clone.lock().unwrap() = false;
     });
 
@@ -90,7 +94,7 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
             return Err(Error::FileNotExe);
         }
     };
-    if !path.exists() {
+    if !path.exists() || !path.is_file() {
         return Err(Error::PathIsNotExists);
     }
 
@@ -108,8 +112,12 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 
     print_success(format!("Game '{name}' launched").as_str());
     thread::spawn(move || {
-        let mut child = Command::new(path).spawn().unwrap();
-        let _ = child.wait();
+        let mut child = Command::new(path).spawn();
+        if let Ok(ref mut child) = child {
+            _ = child.wait();
+        } else {
+            print_error("Can`t open file");
+        }
         *is_game_running_clone.lock().unwrap() = false;
     });
 
@@ -130,5 +138,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    print_hint("core run 'id' or core run --uuid 'uuid''");
+    print_hint("core run 'id' or core run -u 'uuid'");
 }

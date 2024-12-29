@@ -7,4 +7,5 @@ edition = "2021"
 colored = "2.2.0"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_yaml = "0.9.34"
+shellwords = "1.1.0"
 uuid = { version = "1.11.0", features = ["serde", "v4"] }

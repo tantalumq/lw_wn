@@ -5,6 +5,7 @@ use std::{
 };
 
 use colored::Colorize;
+use shellwords::split;
 
 mod add;
 mod list;
@@ -16,9 +17,9 @@ pub const GAME_DATA: &'static str = "./games.yml";
 
 pub fn help() {
     add::help();
-    remove::help();
     run::help();
     update::help();
+    remove::help();
     print_hint("print 'exit' to break loop");
 }
 
@@ -91,16 +92,19 @@ pub fn execute(args: &mut Vec<String>, is_loop: bool) -> Result<(), Error> {
         &["add", name, path] | &["core", "add", name, path] => add::execute(name, path),
         &["add", ..] | ["core", "add", ..] => Ok(add::help()),
         // Run game
-        &["run", "-uuid", uuid] | &["core", "run", "-uuid", uuid] => run::execute_uuid(uuid),
+        &["run", "-u", uuid] | &["core", "run", "-u", uuid] => run::execute_uuid(uuid),
         &["run", id] | &["core", "run", id] => run::execute(id),
         &["run", ..] | &["core", "run", ..] => Ok(run::help()),
         // Update game data
-        &["update", "--uuid", uuid, "-n", path]
-        | &["core", "update", "--uuid", uuid, "-n", path] => update::execute_uuid(uuid, "", path),
-        &["update", "--uuid", uuid, name, "-p"]
-        | &["core", "update", "--uuid", uuid, name, "-p"] => update::execute_uuid(uuid, name, ""),
-        &["update", "--uuid", uuid, name, path]
-        | &["core", "update", "--uuid", uuid, name, path] => update::execute_uuid(uuid, name, path),
+        &["update", "-u", uuid, "-n", path] | &["core", "update", "-u", uuid, "-n", path] => {
+            update::execute_uuid(uuid, "", path)
+        }
+        &["update", "-u", uuid, name, "-p"] | &["core", "update", "-u", uuid, name, "-p"] => {
+            update::execute_uuid(uuid, name, "")
+        }
+        &["update", "-u", uuid, name, path] | &["core", "update", "-u", uuid, name, path] => {
+            update::execute_uuid(uuid, name, path)
+        }
         &["update", id, "-n", path] | &["core", "update", id, "-n", path] => {
             update::execute(id, "", path)
         }
@@ -112,9 +116,7 @@ pub fn execute(args: &mut Vec<String>, is_loop: bool) -> Result<(), Error> {
         }
         &["update", ..] | &["core", "update", ..] => Ok(update::help()),
         // Remove game
-        &["remove", "--uuid", uuid] | &["core", "remove", "--uuid", uuid] => {
-            remove::execute_uuid(uuid)
-        }
+        &["remove", "-u", uuid] | &["core", "remove", "-u", uuid] => remove::execute_uuid(uuid),
         &["remove", id] | &["core", "remove", id] => remove::execute(id),
         &["remove", ..] | &["core", "remove", ..] => Ok(remove::help()),
         _ => Ok(help()),
@@ -122,7 +124,7 @@ pub fn execute(args: &mut Vec<String>, is_loop: bool) -> Result<(), Error> {
 }
 
 pub fn execute_loop() -> Result<(), Error> {
-    let mut args: Vec<String> = parse_input(read_input()?);
+    let mut args: Vec<String> = parse_input(read_input()?)?;
     Ok(loop {
         match args
             .iter()
@@ -138,16 +140,24 @@ pub fn execute_loop() -> Result<(), Error> {
                     print_error(error)
                 }
 
-                args = parse_input(read_input()?);
+                args = parse_input(read_input()?)?;
             }
         }
     })
 }
 
-fn parse_input(input: String) -> Vec<String> {
-    let mut args: Vec<String> = input.split(' ').map(|el| el.trim().to_string()).collect();
-    args.retain(|el| el != "");
-    args
+fn parse_input(input: String) -> Result<Vec<String>, Error> {
+    let args: Vec<String> = split(&input)
+        .map_err(|err| Error::Input(err.to_string()))?
+        .iter()
+        .map(|el| match el.to_lowercase().as_str() {
+            "core" | "exit" | "list" | "add" | "run" | "update" | "remove" => {
+                el.trim().to_lowercase()
+            }
+            _ => el.trim().to_string(),
+        })
+        .collect();
+    Ok(args)
 }
 
 fn read_input() -> Result<String, Error> {
@@ -159,6 +169,5 @@ fn read_input() -> Result<String, Error> {
     stdin()
         .read_line(&mut buf)
         .map_err(|err| Error::Input(err.to_string()))?;
-    let buf = buf.trim().to_lowercase();
     Ok(buf)
 }
