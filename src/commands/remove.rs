@@ -48,5 +48,5 @@ pub fn execute_uuid(uuid: &str) -> Result<(), Error> {
 }
 
 pub fn help() {
-    print_hint("core remove 'uuid' or core remove -i 'index'");
+    print_hint("core remove 'id' or core remove -u 'uuid'");
 }
